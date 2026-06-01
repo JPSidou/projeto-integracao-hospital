@@ -29,6 +29,6 @@ O Subscription Service deve estar rodando antes de iniciar o Middleware.
 ## Pharmacy Adapter
 
 A integração com a Farmácia está encapsulada em `adapters/pharmacy_adapter.py`.  
-Quando a Farmácia for implementada, apenas este arquivo precisa ser atualizado.
+O middleware envia o payload do pedido com `plano_medico` e `user_id` para a Farmácia validar assinatura no Subscription Service.
 
 Contrato esperado da Farmácia: `POST http://localhost:3001/pedidos`

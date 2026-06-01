@@ -195,6 +195,7 @@ async def receive_order(request: Request, body: OrderRequest):
             paciente_cep=body.paciente_cep,
             medicamento=body.medicamento,
             plano_medico=plan,
+            user_id=user_id,
         )
         logger.info("Farmácia respondeu | order_id=%s", order_id)
 

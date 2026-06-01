@@ -30,7 +30,7 @@ Simula o fluxo completo de prescrição médica, desde a interface do médico at
            ▼                                    ▼
 ┌──────────────────────┐            ┌───────────────────────────┐
 │  Subscription Service│            │  Farmácia (porta 3001)    │
-│     (porta 8000)     │            │  (a ser implementada)     │
+│     (porta 8000)     │            │  (implementada)           │
 │                      │            │                           │
 │  - Autenticação JWT  │            │  POST /pedidos            │
 │  - Planos BASIC /    │            │  Integração ViaCEP        │
@@ -73,7 +73,12 @@ projeto-integracao-hospital/
 │   ├── .env.example
 │   └── README.md
 │
-├── farmacia/                   # A ser implementado por outro desenvolvedor
+├── farmacia/                   # Serviço da Farmácia (este projeto)
+│   ├── app.py
+│   ├── subscription_client.py
+│   ├── viacep_client.py
+│   ├── requirements.txt
+│   ├── .env.example
 │   └── README.md
 │
 └── README.md                   # Este arquivo
@@ -102,7 +107,16 @@ uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 O banco de dados SQLite é criado automaticamente em `subscription/subscription.db`.  
 Os dados de seed (usuários, planos, assinaturas) são inseridos na primeira inicialização.
 
-### 2. Middleware (porta 3000)
+### 2. Farmácia (porta 3001)
+
+```bash
+cd farmacia
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app:app --host 0.0.0.0 --port 3001 --reload
+```
+
+### 3. Middleware (porta 3000)
 
 ```bash
 cd middleware
@@ -111,7 +125,7 @@ cp .env.example .env
 uvicorn app:app --host 0.0.0.0 --port 3000 --reload
 ```
 
-### 3. Hospital (porta 8501)
+### 4. Hospital (porta 8501)
 
 ```bash
 cd hospital
@@ -139,10 +153,19 @@ Acesse: http://localhost:8501
 | Variável                      | Padrão                    | Descrição                                    |
 |-------------------------------|---------------------------|----------------------------------------------|
 | `SUBSCRIPTION_SERVICE_URL`    | `http://localhost:8000`   | URL do Subscription Service                  |
-| `PHARMACY_URL`                | `http://localhost:3001`   | URL da Farmácia (futura implementação)        |
+| `PHARMACY_URL`                | `http://localhost:3001`   | URL da Farmácia                               |
 | `PREMIUM_DISCOUNT_PERCENT`    | `10`                      | Desconto (%) aplicado ao plano PREMIUM        |
 | `SUBSCRIPTION_TIMEOUT_SECONDS`| `10`                      | Timeout para chamadas ao Subscription Service |
 | `PHARMACY_TIMEOUT_SECONDS`    | `10`                      | Timeout para chamadas à Farmácia              |
+
+### `farmacia/.env`
+
+| Variável                      | Padrão                    | Descrição                                     |
+|-------------------------------|---------------------------|-----------------------------------------------|
+| `SUBSCRIPTION_SERVICE_URL`    | `http://localhost:8000`   | URL do Subscription Service                    |
+| `SUBSCRIPTION_TIMEOUT_SECONDS`| `10`                      | Timeout para validação de assinatura           |
+| `VIACEP_BASE_URL`             | `https://viacep.com.br/ws`| URL base do ViaCEP                             |
+| `VIACEP_TIMEOUT_SECONDS`      | `10`                      | Timeout para consulta de endereço por CEP      |
 
 ---
 
@@ -233,6 +256,16 @@ Documentação interativa: http://localhost:8000/docs
 | GET    | `/health`         | Health check                                 |
 
 Documentação interativa: http://localhost:3000/docs
+
+### Farmácia (porta 3001)
+
+| Método | Endpoint            | Descrição                                    |
+|--------|---------------------|----------------------------------------------|
+| POST   | `/pedidos`          | Processar pedido, validar assinatura e CEP   |
+| GET    | `/pedidos/{order_id}` | Buscar pedido processado por ID            |
+| GET    | `/health`           | Health check                                 |
+
+Documentação interativa: http://localhost:3001/docs
 
 ---
 

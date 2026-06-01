@@ -1,6 +1,5 @@
 """
 Adaptador da Farmácia — ponto único de integração com o serviço de Farmácia.
-Quando a Farmácia for implementada, apenas este arquivo precisa ser atualizado.
 
 Contrato esperado da Farmácia
 ------------------------------
@@ -12,7 +11,8 @@ Request body:
         "paciente_nome": "string",
         "paciente_cep":  "string (8 dígitos, sem hífen)",
         "medicamento":   "string",
-        "plano_medico":  "BASIC" | "PREMIUM"
+        "plano_medico":  "BASIC" | "PREMIUM",
+        "user_id":       "int (opcional)"
     }
 
 Response (HTTP 200 ou 201):
@@ -64,6 +64,7 @@ def send_order(
     paciente_cep: str,
     medicamento: str,
     plano_medico: str,
+    user_id: int | None = None,
 ) -> dict:
     """Encaminha o pedido de prescrição para a Farmácia."""
     payload = {
@@ -71,6 +72,7 @@ def send_order(
         "paciente_cep": paciente_cep,
         "medicamento": medicamento,
         "plano_medico": plano_medico,
+        "user_id": user_id,
     }
 
     url = f"{PHARMACY_URL}/pedidos"
