@@ -6,8 +6,19 @@ import os
 # CONFIGURAÇÕES DA INTEGRAÇÃO
 # ==========================================
 # URL do Middleware. Em deploy, defina MIDDLEWARE_URL com a URL pública do serviço.
-MIDDLEWARE_BASE_URL = os.getenv("MIDDLEWARE_URL", "http://localhost:3000").rstrip("/")
-URL_FARMACIA = os.getenv("URL_FARMACIA", f"{MIDDLEWARE_BASE_URL}/pedidos")
+def build_middleware_url():
+    explicit_url = os.getenv("URL_FARMACIA")
+    if explicit_url:
+        return explicit_url.rstrip("/")
+
+    middleware_url = os.getenv("MIDDLEWARE_URL", "http://localhost:3000").rstrip("/")
+    if middleware_url.endswith("/pedidos"):
+        return middleware_url
+    return f"{middleware_url}/pedidos"
+
+
+URL_FARMACIA = build_middleware_url()
+print(f"Hospital enviando prescricoes para: {URL_FARMACIA}")
 
 def enviar_prescricao(usuario, senha, paciente_nome, paciente_cep, medicamento):
     """
@@ -105,7 +116,7 @@ if submitted:
                         
             # Tratamento de exceções de rede e infraestrutura
             except requests.exceptions.ConnectionError:
-                st.error(f"❌ Falha de Conexão: Não foi possível alcançar a API da Farmácia em `{URL_FARMACIA}`. Verifique se o serviço está rodando.")
+                st.error(f"❌ Falha de Conexão: Não foi possível alcançar o Middleware em `{URL_FARMACIA}`. Verifique a variável MIDDLEWARE_URL no deploy do Hospital.")
             except requests.exceptions.Timeout:
                 st.error("⏳ Tempo Limite Excedido: A API da Farmácia demorou muito para responder.")
             except Exception as e:
