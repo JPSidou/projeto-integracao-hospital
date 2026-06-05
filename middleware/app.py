@@ -276,6 +276,11 @@ async def health():
     return {"status": "ok", "service": "middleware"}
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "middleware", "docs": "/docs", "health": "/health"}
+
+
 @app.on_event("startup")
 async def on_startup():
     logger.info("Middleware iniciado na porta %s.", os.getenv("PORT", "3000"))

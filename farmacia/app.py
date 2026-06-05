@@ -158,3 +158,8 @@ def get_order(order_id: str):
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "farmacia"}
+
+
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "farmacia", "docs": "/docs", "health": "/health"}

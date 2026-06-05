@@ -227,3 +227,8 @@ def get_payments(user_id: int, db: Session = Depends(get_db)):
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "subscription"}
+
+
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "subscription", "docs": "/docs", "health": "/health"}
