@@ -11,6 +11,7 @@ Ele recebe pedidos médicos do Middleware, usa o plano já validado pelo Middlew
 1. Por padrão, confia na validação de assinatura feita pelo Middleware.
 1. Opcionalmente, se `REVALIDATE_SUBSCRIPTION=true`, revalida a assinatura no Subscription.
 1. Consulta o ViaCEP para obter endereço pelo CEP.
+1. Se o ViaCEP estiver indisponível, registra o pedido com endereço pendente em vez de derrubar o fluxo.
 1. Armazena o pedido em memória para consulta posterior.
 1. Retorna status final + plano + endereço de entrega.
 
@@ -102,14 +103,15 @@ Quando `user_id` não é enviado, o processamento segue com o plano recebido do 
 1. Assinatura `EXPIRED` ou `CANCELED` -> bloqueia pedido (`403`).
 1. Assinatura diferente de `ACTIVE` -> bloqueia pedido (`403`).
 1. CEP inválido ou inexistente -> retorna `422`.
-1. Falha de comunicação com subscription ou ViaCEP -> retorna `503`.
+1. Falha de comunicação com ViaCEP -> pedido é registrado com endereço pendente.
+1. Falha de comunicação com subscription -> retorna `503` apenas se `REVALIDATE_SUBSCRIPTION=true`.
 
 ## Códigos de resposta esperados
 
 - `201 Created`: pedido processado com sucesso.
 - `403 Forbidden`: assinatura inválida/inativa.
 - `422 Unprocessable Entity`: payload inválido ou CEP inválido/inexistente.
-- `503 Service Unavailable`: subscription/ViaCEP indisponível.
+- `503 Service Unavailable`: subscription indisponível apenas se `REVALIDATE_SUBSCRIPTION=true`.
 
 ## Exemplos de teste com curl
 

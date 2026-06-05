@@ -125,14 +125,19 @@ def create_order(payload: OrderRequest):
     try:
         endereco = lookup_address(payload.paciente_cep)
     except AddressLookupUnavailableError as exc:
-        logger.error("ViaCEP indisponível para CEP=%s: %s", payload.paciente_cep, exc)
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Address lookup service is currently unavailable",
-        ) from exc
+        logger.warning("ViaCEP indisponível para CEP=%s: %s", payload.paciente_cep, exc)
+        endereco = {
+            "logradouro": "Endereco pendente",
+            "bairro": "Endereco pendente",
+            "localidade": "Endereco pendente",
+            "uf": "NA",
+        }
+        address_lookup_status = "unavailable"
     except AddressLookupError as exc:
         logger.warning("Falha de CEP para pedido: %s", exc)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    else:
+        address_lookup_status = "ok"
 
     order_id = str(uuid.uuid4())
     processed_at = datetime.utcnow().isoformat()
@@ -145,6 +150,7 @@ def create_order(payload: OrderRequest):
         "paciente_cep": payload.paciente_cep,
         "medicamento": payload.medicamento,
         "endereco_entrega": endereco,
+        "address_lookup_status": address_lookup_status,
         "user_id": payload.user_id,
         "subscription_snapshot": subscription_snapshot,
         "processed_at": processed_at,
@@ -152,8 +158,8 @@ def create_order(payload: OrderRequest):
     _orders[order_id] = record
 
     logger.info(
-        "Pedido processado | order_id=%s | user_id=%s | plano=%s | cep=%s",
-        order_id, payload.user_id, plano_final, payload.paciente_cep,
+        "Pedido processado | order_id=%s | user_id=%s | plano=%s | cep=%s | address_lookup=%s",
+        order_id, payload.user_id, plano_final, payload.paciente_cep, address_lookup_status,
     )
 
     return {
