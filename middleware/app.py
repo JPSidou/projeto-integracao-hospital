@@ -1,10 +1,11 @@
 """
 Middleware Service — orquestrador central da integração hospitalar.
-Run: uvicorn app:app --host 0.0.0.0 --port 3000 --reload
+Run: uvicorn app:app --host 0.0.0.0 --port ${PORT:-3000}
 """
 
 import base64
 import logging
+import os
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -277,7 +278,7 @@ async def health():
 
 @app.on_event("startup")
 async def on_startup():
-    logger.info("Middleware iniciado na porta 3000.")
+    logger.info("Middleware iniciado na porta %s.", os.getenv("PORT", "3000"))
     logger.info(
         "Config | SUBSCRIPTION_SERVICE_URL=%s | PHARMACY_URL=%s | PREMIUM_DISCOUNT=%.1f%%",
         settings.SUBSCRIPTION_SERVICE_URL,

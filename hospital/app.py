@@ -1,11 +1,13 @@
 import streamlit as st
 import requests
+import os
 
 # ==========================================
 # CONFIGURAÇÕES DA INTEGRAÇÃO
 # ==========================================
-# URL base da API da Farmácia. Pode ser alterada conforme o ambiente.
-URL_FARMACIA = "http://localhost:3000/pedidos"
+# URL do Middleware. Em deploy, defina MIDDLEWARE_URL com a URL pública do serviço.
+MIDDLEWARE_BASE_URL = os.getenv("MIDDLEWARE_URL", "http://localhost:3000").rstrip("/")
+URL_FARMACIA = os.getenv("URL_FARMACIA", f"{MIDDLEWARE_BASE_URL}/pedidos")
 
 def enviar_prescricao(usuario, senha, paciente_nome, paciente_cep, medicamento):
     """

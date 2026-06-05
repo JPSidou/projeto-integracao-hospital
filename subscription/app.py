@@ -44,7 +44,7 @@ def on_startup():
         run_seed(db)
     finally:
         db.close()
-    logger.info("Subscription Service iniciado na porta 8000.")
+    logger.info("Subscription Service iniciado na porta %s.", os.getenv("PORT", "8000"))
 
 
 def http_error(status_code: int, detail: str):
