@@ -39,6 +39,7 @@ Arquivo: `.env`
 | `SUBSCRIPTION_TIMEOUT_SECONDS` | `10`                        | Timeout da chamada ao subscription |
 | `REVALIDATE_SUBSCRIPTION`      | `false`                     | Se `true`, a Farmácia revalida assinatura no Subscription. |
 | `VIACEP_BASE_URL`              | `https://viacep.com.br/ws`  | URL base do ViaCEP |
+| `BRASILAPI_CEP_BASE_URL`       | `https://brasilapi.com.br/api/cep/v1` | URL base de fallback para consulta de CEP |
 | `VIACEP_TIMEOUT_SECONDS`       | `10`                        | Timeout da consulta de CEP |
 
 ## Integrações externas

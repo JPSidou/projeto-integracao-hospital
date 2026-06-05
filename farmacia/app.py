@@ -21,6 +21,7 @@ from subscription_client import (
 from viacep_client import (
     AddressLookupError,
     AddressLookupUnavailableError,
+    BRASILAPI_CEP_BASE_URL,
     VIACEP_BASE_URL,
     lookup_address,
 )
@@ -195,4 +196,5 @@ def debug_config():
         "revalidate_subscription": REVALIDATE_SUBSCRIPTION,
         "subscription_service_url": SUBSCRIPTION_SERVICE_URL,
         "viacep_base_url": VIACEP_BASE_URL,
+        "brasilapi_cep_base_url": BRASILAPI_CEP_BASE_URL,
     }
