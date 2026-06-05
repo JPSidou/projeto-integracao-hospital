@@ -44,8 +44,9 @@ def build_pedidos_url(middleware_url):
     return f"{middleware_url}/pedidos"
 
 
-DEFAULT_MIDDLEWARE_URL = get_default_middleware_url()
-print(f"Hospital MIDDLEWARE_URL inicial: {DEFAULT_MIDDLEWARE_URL or '<nao configurada>'}")
+MIDDLEWARE_URL = get_default_middleware_url()
+URL_PEDIDOS = build_pedidos_url(MIDDLEWARE_URL)
+print(f"Hospital enviando prescricoes para: {URL_PEDIDOS or '<MIDDLEWARE_URL nao configurada>'}")
 
 def enviar_prescricao(url_pedidos, usuario, senha, paciente_nome, paciente_cep, medicamento):
     """
@@ -89,19 +90,6 @@ st.sidebar.info("Por favor, informe seu usuário e senha para autorizar o envio.
 usuario = st.sidebar.text_input("Usuário")
 senha = st.sidebar.text_input("Senha", type="password")
 
-st.sidebar.header("Integração")
-middleware_url = st.sidebar.text_input(
-    "URL do Middleware",
-    value=DEFAULT_MIDDLEWARE_URL,
-    placeholder="https://dominio-do-middleware",
-)
-url_pedidos = build_pedidos_url(middleware_url)
-
-if url_pedidos:
-    st.sidebar.caption(f"Destino: {url_pedidos}")
-else:
-    st.sidebar.warning("Informe a URL pública do Middleware.")
-
 # ------------------------------------------
 # Corpo Principal: Formulário de Prescrição
 # ------------------------------------------
@@ -125,8 +113,8 @@ if submitted:
     # Validações locais antes de disparar a requisição
     if not usuario or not senha:
         st.warning("⚠️ Informe o Usuário e a Senha na barra lateral antes de enviar.")
-    elif not url_pedidos:
-        st.warning("⚠️ Informe a URL pública do Middleware na barra lateral antes de enviar.")
+    elif not URL_PEDIDOS:
+        st.error("🚨 Configuração ausente: defina MIDDLEWARE_URL no deploy do Hospital.")
     elif not paciente_nome or not paciente_cep or not medicamento:
         st.warning("⚠️ Todos os campos da prescrição devem ser preenchidos.")
     else:
@@ -134,7 +122,7 @@ if submitted:
         with st.spinner("Enviando prescrição para a Farmácia..."):
             try:
                 # Realiza a chamada para a API
-                resposta = enviar_prescricao(url_pedidos, usuario, senha, paciente_nome, paciente_cep, medicamento)
+                resposta = enviar_prescricao(URL_PEDIDOS, usuario, senha, paciente_nome, paciente_cep, medicamento)
                 
                 # Trata os possíveis retornos da API
                 if resposta.status_code in (200, 201):
@@ -158,7 +146,7 @@ if submitted:
                         
             # Tratamento de exceções de rede e infraestrutura
             except requests.exceptions.ConnectionError:
-                st.error(f"❌ Falha de Conexão: Não foi possível alcançar o Middleware em `{url_pedidos}`. Verifique a URL pública do Middleware.")
+                st.error(f"❌ Falha de Conexão: Não foi possível alcançar o Middleware em `{URL_PEDIDOS}`. Verifique MIDDLEWARE_URL no deploy do Hospital.")
             except requests.exceptions.Timeout:
                 st.error("⏳ Tempo Limite Excedido: A API da Farmácia demorou muito para responder.")
             except Exception as e:
