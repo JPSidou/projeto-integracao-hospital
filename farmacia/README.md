@@ -2,16 +2,14 @@
 
 Serviço da Farmácia do monorepo de integração hospitalar.
 
-Ele recebe pedidos médicos do Middleware, valida assinatura/plano no `subscription` (quando `user_id` é enviado), consulta o endereço de entrega no ViaCEP e devolve uma resposta padronizada para o fluxo Hospital -> Middleware -> Farmácia.
+Ele recebe pedidos médicos do Middleware, usa o plano já validado pelo Middleware, consulta o endereço de entrega no ViaCEP e devolve uma resposta padronizada para o fluxo Hospital -> Middleware -> Farmácia.
 
 ## O que a Farmácia faz
 
 1. Recebe prescrição em `POST /pedidos`.
 1. Normaliza o plano médico para `BASIC` ou `PREMIUM`.
-1. Se houver `user_id`, consulta o `Subscription Service` para validar:
-   - status da assinatura (`ACTIVE`, `EXPIRED`, `CANCELED`);
-   - plano oficial associado à assinatura.
-1. Bloqueia processamento para assinaturas não ativas.
+1. Por padrão, confia na validação de assinatura feita pelo Middleware.
+1. Opcionalmente, se `REVALIDATE_SUBSCRIPTION=true`, revalida a assinatura no Subscription.
 1. Consulta o ViaCEP para obter endereço pelo CEP.
 1. Armazena o pedido em memória para consulta posterior.
 1. Retorna status final + plano + endereço de entrega.
@@ -38,6 +36,7 @@ Arquivo: `.env`
 |--------------------------------|-----------------------------|-----------|
 | `SUBSCRIPTION_SERVICE_URL`     | `http://localhost:8000`     | URL base do serviço de assinatura |
 | `SUBSCRIPTION_TIMEOUT_SECONDS` | `10`                        | Timeout da chamada ao subscription |
+| `REVALIDATE_SUBSCRIPTION`      | `false`                     | Se `true`, a Farmácia revalida assinatura no Subscription. |
 | `VIACEP_BASE_URL`              | `https://viacep.com.br/ws`  | URL base do ViaCEP |
 | `VIACEP_TIMEOUT_SECONDS`       | `10`                        | Timeout da consulta de CEP |
 
@@ -45,8 +44,8 @@ Arquivo: `.env`
 
 1. Middleware -> Farmácia
    - `POST /pedidos`
-1. Farmácia -> Subscription
-   - `GET /subscriptions/{user_id}`
+1. Farmácia -> Subscription (opcional)
+   - `GET /subscriptions/{user_id}` quando `REVALIDATE_SUBSCRIPTION=true`
 1. Farmácia -> ViaCEP
    - `GET /ws/{cep}/json/`
 

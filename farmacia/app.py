@@ -38,6 +38,7 @@ app = FastAPI(
 )
 
 _orders: dict[str, dict] = {}
+REVALIDATE_SUBSCRIPTION = os.getenv("REVALIDATE_SUBSCRIPTION", "false").lower() == "true"
 
 
 class OrderRequest(BaseModel):
@@ -72,6 +73,14 @@ def _normalize_plan(plan: Optional[str]) -> str:
 
 def _validate_subscription(user_id: Optional[int], fallback_plan: str) -> tuple[str, Optional[dict]]:
     if user_id is None:
+        return fallback_plan, None
+
+    if not REVALIDATE_SUBSCRIPTION:
+        logger.info(
+            "Revalidacao de assinatura desativada na Farmacia | user_id=%s | plano=%s",
+            user_id,
+            fallback_plan,
+        )
         return fallback_plan, None
 
     try:
@@ -177,6 +186,7 @@ def debug_config():
     return {
         "service": "farmacia",
         "port": os.getenv("PORT"),
+        "revalidate_subscription": REVALIDATE_SUBSCRIPTION,
         "subscription_service_url": SUBSCRIPTION_SERVICE_URL,
         "viacep_base_url": VIACEP_BASE_URL,
     }

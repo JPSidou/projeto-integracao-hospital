@@ -15,7 +15,8 @@ Este projeto é um monorepo com quatro aplicações independentes. Em plataforma
 - Start command: `./farmacia/start.sh`
 - Health check: `/health`
 - Variáveis:
-  - `SUBSCRIPTION_SERVICE_URL`: URL pública do Subscription, sem barra final
+  - `REVALIDATE_SUBSCRIPTION`: use `false` no fluxo com Middleware
+  - `SUBSCRIPTION_SERVICE_URL`: URL pública do Subscription, sem barra final, necessária apenas se `REVALIDATE_SUBSCRIPTION=true`
   - demais variáveis em `farmacia/.env.example`
 
 ## Middleware
