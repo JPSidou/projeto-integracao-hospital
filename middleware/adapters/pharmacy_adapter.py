@@ -43,7 +43,7 @@ load_dotenv()
 
 logger = logging.getLogger("middleware.pharmacy_adapter")
 
-PHARMACY_URL = os.getenv("PHARMACY_URL", "http://localhost:3001")
+PHARMACY_URL = os.getenv("PHARMACY_URL", "http://localhost:3001").rstrip("/")
 PHARMACY_TIMEOUT = int(os.getenv("PHARMACY_TIMEOUT_SECONDS", "10"))
 
 

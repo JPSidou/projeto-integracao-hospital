@@ -8,7 +8,7 @@ load_dotenv()
 
 logger = logging.getLogger("farmacia.viacep_client")
 
-VIACEP_BASE_URL = os.getenv("VIACEP_BASE_URL", "https://viacep.com.br/ws")
+VIACEP_BASE_URL = os.getenv("VIACEP_BASE_URL", "https://viacep.com.br/ws").rstrip("/")
 VIACEP_TIMEOUT_SECONDS = int(os.getenv("VIACEP_TIMEOUT_SECONDS", "10"))
 
 

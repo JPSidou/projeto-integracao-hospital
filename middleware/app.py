@@ -281,6 +281,16 @@ async def root():
     return {"status": "ok", "service": "middleware", "docs": "/docs", "health": "/health"}
 
 
+@app.get("/debug/config")
+async def debug_config():
+    return {
+        "service": "middleware",
+        "port": os.getenv("PORT"),
+        "subscription_service_url": settings.SUBSCRIPTION_SERVICE_URL,
+        "pharmacy_url": settings.PHARMACY_URL,
+    }
+
+
 @app.on_event("startup")
 async def on_startup():
     logger.info("Middleware iniciado na porta %s.", os.getenv("PORT", "3000"))

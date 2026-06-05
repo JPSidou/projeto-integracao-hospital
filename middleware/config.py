@@ -5,10 +5,10 @@ load_dotenv()
 
 
 class Settings:
-    SUBSCRIPTION_SERVICE_URL: str = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8000")
+    SUBSCRIPTION_SERVICE_URL: str = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8000").rstrip("/")
 
-    # URL da Farmácia — a ser implementada por outro desenvolvedor
-    PHARMACY_URL: str = os.getenv("PHARMACY_URL", "http://localhost:3001")
+    # URL da Farmácia
+    PHARMACY_URL: str = os.getenv("PHARMACY_URL", "http://localhost:3001").rstrip("/")
     PHARMACY_TIMEOUT_SECONDS: int = int(os.getenv("PHARMACY_TIMEOUT_SECONDS", "10"))
 
     # Desconto aplicado a pedidos do plano PREMIUM (configurável via .env)

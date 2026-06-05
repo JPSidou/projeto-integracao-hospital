@@ -8,7 +8,7 @@ load_dotenv()
 
 logger = logging.getLogger("farmacia.subscription_client")
 
-SUBSCRIPTION_SERVICE_URL = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8000")
+SUBSCRIPTION_SERVICE_URL = os.getenv("SUBSCRIPTION_SERVICE_URL", "http://localhost:8000").rstrip("/")
 SUBSCRIPTION_TIMEOUT_SECONDS = int(os.getenv("SUBSCRIPTION_TIMEOUT_SECONDS", "10"))
 
 

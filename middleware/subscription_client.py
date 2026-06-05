@@ -4,7 +4,7 @@ from config import settings
 
 logger = logging.getLogger("middleware.subscription_client")
 
-BASE_URL = settings.SUBSCRIPTION_SERVICE_URL
+BASE_URL = settings.SUBSCRIPTION_SERVICE_URL.rstrip("/")
 TIMEOUT = settings.SUBSCRIPTION_TIMEOUT_SECONDS
 
 

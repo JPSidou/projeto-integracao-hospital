@@ -6,21 +6,48 @@ import os
 # CONFIGURAÇÕES DA INTEGRAÇÃO
 # ==========================================
 # URL do Middleware. Em deploy, defina MIDDLEWARE_URL com a URL pública do serviço.
-def build_middleware_url():
-    explicit_url = os.getenv("URL_FARMACIA")
-    if explicit_url:
-        return explicit_url.rstrip("/")
+def get_config_value(name):
+    value = os.getenv(name)
+    if value:
+        return value
 
-    middleware_url = os.getenv("MIDDLEWARE_URL", "http://localhost:3000").rstrip("/")
+    try:
+        value = st.secrets.get(name)
+    except Exception:
+        value = None
+
+    return value
+
+
+def get_default_middleware_url():
+    explicit_url = get_config_value("URL_FARMACIA")
+    if explicit_url:
+        return explicit_url
+
+    middleware_url = get_config_value("MIDDLEWARE_URL")
+    if middleware_url:
+        return middleware_url
+
+    # Em deploy, PORT geralmente existe. Nesse caso, não assumir localhost.
+    if os.getenv("PORT"):
+        return ""
+
+    return "http://localhost:3000"
+
+
+def build_pedidos_url(middleware_url):
+    middleware_url = (middleware_url or "").strip().rstrip("/")
+    if not middleware_url:
+        return ""
     if middleware_url.endswith("/pedidos"):
         return middleware_url
     return f"{middleware_url}/pedidos"
 
 
-URL_FARMACIA = build_middleware_url()
-print(f"Hospital enviando prescricoes para: {URL_FARMACIA}")
+DEFAULT_MIDDLEWARE_URL = get_default_middleware_url()
+print(f"Hospital MIDDLEWARE_URL inicial: {DEFAULT_MIDDLEWARE_URL or '<nao configurada>'}")
 
-def enviar_prescricao(usuario, senha, paciente_nome, paciente_cep, medicamento):
+def enviar_prescricao(url_pedidos, usuario, senha, paciente_nome, paciente_cep, medicamento):
     """
     Função responsável por realizar a integração via HTTP POST com a Farmácia.
     Utiliza HTTP Basic Authentication para repassar as credenciais do médico.
@@ -33,7 +60,7 @@ def enviar_prescricao(usuario, senha, paciente_nome, paciente_cep, medicamento):
     
     # Timeout de 10 segundos para evitar que a interface trave caso a API demore
     response = requests.post(
-        URL_FARMACIA,
+        url_pedidos,
         json=payload,
         auth=(usuario, senha),
         timeout=10
@@ -62,6 +89,19 @@ st.sidebar.info("Por favor, informe seu usuário e senha para autorizar o envio.
 usuario = st.sidebar.text_input("Usuário")
 senha = st.sidebar.text_input("Senha", type="password")
 
+st.sidebar.header("Integração")
+middleware_url = st.sidebar.text_input(
+    "URL do Middleware",
+    value=DEFAULT_MIDDLEWARE_URL,
+    placeholder="https://dominio-do-middleware",
+)
+url_pedidos = build_pedidos_url(middleware_url)
+
+if url_pedidos:
+    st.sidebar.caption(f"Destino: {url_pedidos}")
+else:
+    st.sidebar.warning("Informe a URL pública do Middleware.")
+
 # ------------------------------------------
 # Corpo Principal: Formulário de Prescrição
 # ------------------------------------------
@@ -85,6 +125,8 @@ if submitted:
     # Validações locais antes de disparar a requisição
     if not usuario or not senha:
         st.warning("⚠️ Informe o Usuário e a Senha na barra lateral antes de enviar.")
+    elif not url_pedidos:
+        st.warning("⚠️ Informe a URL pública do Middleware na barra lateral antes de enviar.")
     elif not paciente_nome or not paciente_cep or not medicamento:
         st.warning("⚠️ Todos os campos da prescrição devem ser preenchidos.")
     else:
@@ -92,7 +134,7 @@ if submitted:
         with st.spinner("Enviando prescrição para a Farmácia..."):
             try:
                 # Realiza a chamada para a API
-                resposta = enviar_prescricao(usuario, senha, paciente_nome, paciente_cep, medicamento)
+                resposta = enviar_prescricao(url_pedidos, usuario, senha, paciente_nome, paciente_cep, medicamento)
                 
                 # Trata os possíveis retornos da API
                 if resposta.status_code in (200, 201):
@@ -116,7 +158,7 @@ if submitted:
                         
             # Tratamento de exceções de rede e infraestrutura
             except requests.exceptions.ConnectionError:
-                st.error(f"❌ Falha de Conexão: Não foi possível alcançar o Middleware em `{URL_FARMACIA}`. Verifique a variável MIDDLEWARE_URL no deploy do Hospital.")
+                st.error(f"❌ Falha de Conexão: Não foi possível alcançar o Middleware em `{url_pedidos}`. Verifique a URL pública do Middleware.")
             except requests.exceptions.Timeout:
                 st.error("⏳ Tempo Limite Excedido: A API da Farmácia demorou muito para responder.")
             except Exception as e:

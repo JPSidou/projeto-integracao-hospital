@@ -4,6 +4,7 @@ Run: uvicorn app:app --host 0.0.0.0 --port ${PORT:-3001}
 """
 
 import logging
+import os
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -13,10 +14,16 @@ from pydantic import BaseModel, Field
 
 from subscription_client import (
     fetch_subscription,
+    SUBSCRIPTION_SERVICE_URL,
     SubscriptionServiceError,
     SubscriptionUnavailableError,
 )
-from viacep_client import AddressLookupError, AddressLookupUnavailableError, lookup_address
+from viacep_client import (
+    AddressLookupError,
+    AddressLookupUnavailableError,
+    VIACEP_BASE_URL,
+    lookup_address,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -163,3 +170,13 @@ def health():
 @app.get("/")
 def root():
     return {"status": "ok", "service": "farmacia", "docs": "/docs", "health": "/health"}
+
+
+@app.get("/debug/config")
+def debug_config():
+    return {
+        "service": "farmacia",
+        "port": os.getenv("PORT"),
+        "subscription_service_url": SUBSCRIPTION_SERVICE_URL,
+        "viacep_base_url": VIACEP_BASE_URL,
+    }
